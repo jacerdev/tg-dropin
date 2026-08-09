@@ -8,10 +8,10 @@ import urllib.request
 import urllib.parse
 import urllib.error
 
-class TelegramBot:
+class TelegramSidecar:
     def __init__(self, bot_token=None, chat_id=None):
         """
-        Initializes the Telegram Bot.
+        Initializes the Telegram Sidecar.
         If bot_token or chat_id are not provided, it will attempt to read them from environment variables (BOT_TOKEN and CHAT_ID).
         """
         self.bot_token = bot_token or os.environ.get("BOT_TOKEN")

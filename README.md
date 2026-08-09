@@ -13,14 +13,14 @@ Unlike major bot frameworks that hijack main loops or force you to rewrite code 
 
 ## Quickstart
 
-Just copy `telegram_bot.py` into your project directory.
+Just copy `tg_sidecar.py` into your project directory.
 
 ```python
 import time
-from telegram_bot import TelegramBot
+from tg_sidecar import TelegramSidecar
 
 # Initialize bot (pass credentials directly or leave empty to use env variables)
-bot = TelegramBot(bot_token="your_bot_token", chat_id="your_chat_id")
+bot = TelegramSidecar(bot_token="your_bot_token", chat_id="your_chat_id")
 
 # Send outbound notifications (works anytime)
 bot.send_message("🚀 Script has started!")
