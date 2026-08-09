@@ -58,3 +58,21 @@ except KeyboardInterrupt:
 export BOT_TOKEN="your_bot_token"
 export CHAT_ID="your_chat_id"
 ```
+
+## Bonus: Bash / CLI Usage
+
+If you want to send notifications directly from your shell scripts, you can add this helper function to your `.bashrc` or script. It automatically uses the same environment variables.
+
+```bash
+send_telegram_message() {
+    # Uses BOT_TOKEN and CHAT_ID from environment variables
+    curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+        -d "chat_id=${CHAT_ID}" \
+        --data-urlencode "text=$1" > /dev/null
+    
+    echo "📣: $1" # prints the message to the terminal
+}
+
+# Example usage:
+# python train.py && send_telegram_message "Training finished successfully!"
+```
