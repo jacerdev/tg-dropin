@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tg-dropin"
+version = "0.1.0"
+description = "Zero-dependency Telegram sidecar for existing Python scripts"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Your Name"}
+]
+keywords = ["telegram", "bot", "remote-control", "automation", "research"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/jacerdev/tg-dropin"
+Repository = "https://github.com/jacerdev/tg-dropin"
+Issues = "https://github.com/jacerdev/tg-dropin/issues"
+
+[tool.setuptools]
+py-modules = ["tg_dropin"]
+package-dir = {"" = "src"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

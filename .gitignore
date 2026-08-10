@@ -2,7 +2,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 .env
-test.py
-test_*.py
 .vscode/
 .idea/
+.venv
+dist/
+*.egg-info/
+.pytest_cache/
+/sandbox
