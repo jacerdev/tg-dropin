@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE"}
 authors = [
-    {name = "Your Name"}
+    {name = "jacerdev"}
 ]
 keywords = ["telegram", "bot", "remote-control", "automation", "research"]
 classifiers = [

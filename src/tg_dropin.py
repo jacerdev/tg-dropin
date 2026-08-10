@@ -56,8 +56,18 @@ class TelegramSidecar:
             raise
 
     def command(self, name, description=""):
-        """
-        Decorator to register a command handler.
+        """Decorator to register a command handler.
+        Usage:
+            @bot.command("set", description="Update a configuration parameter")
+            def handle_set(arg):
+                args = arg.split()
+                if len(args) < 2:
+                    return "⚠️ Usage: /set <param> <value>"
+                param, val = args[0], args[1]
+                if param not in config:
+                    return f"⚠️ Unknown parameter: {param}"
+                config[param] = val
+                return f"Updated {param} to {val}"
         """
         def decorator(func):
             self.commands[name.lower()] = {"func": func, "description": description}
@@ -135,6 +145,10 @@ class TelegramSidecar:
         return []
 
     def _process_message(self, text, sender_id):
+        """
+        Process a single incoming message.
+        If a handler returns a string, it will be sent as reply to the command.
+        """
         parts = text.split(maxsplit=1)
         if not parts:
             return
