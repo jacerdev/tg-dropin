@@ -1,16 +1,11 @@
-# TG-DropIn: Zero-Dependency Telegram Sidecar
+# TG-DropIn
 
-**Add Telegram remote control to any Python script — without rewriting anything.**
-
-`tg-dropin` is a zero-dependency Telegram sidecar for long-running scripts, research experiments, training jobs, data pipelines, and automation.
-
-Unlike major bot frameworks that hijack the main loop or require rewriting code around `asyncio`, `tg-dropin` acts as a lightweight sidecar that requires no changes to the existing codebase.
+A zero-dependency Telegram sidecar for Python scripts, providing notifications and remote control for long-running jobs without restructuring code or installing anything.
 
 ## Features
 - **Zero Dependencies:** Uses only standard library modules.
-- **Media Support:** Built-in `notify`, `send_image`, and `send_document` utility methods.
-- **Exception Notifications:** Wrap code in a context manager to instantly send tracebacks on crash.
-- **Security Whitelisting:** Only processes messages from explicitly specified `CHAT_ID` (or list of IDs).
+- **Media Support:** Built-in `send_message` and `send_file`.
+- **Exception Notifications:** Wrap code to receive tracebacks on crash.
 
 ## Installation
 
@@ -20,7 +15,7 @@ pip install tg-dropin
 ```
 
 **Or just drop it in literally:**
-Copy `src/tg_dropin.py` directly into the project directory.
+Copy-Paste `src/tg_dropin.py`.
 
 ## Quickstart
 
@@ -43,30 +38,31 @@ def handle_unknown(text):
 # Start the background daemon thread manually
 bot.start()
 
-bot.notify("🚀 Script has started!")  # Broadcasts to all authorized chats
-bot.send_message("Targeted message", chat_id="USER_1_ID") # Or send to a specific chat
+bot.send_message("🚀 Script has started!")  # Broadcasts to all authorized chats or send to a specific chat
 
 with bot.notify_exceptions(): # Optional: Wrap code to send tracebacks to Telegram in case of an exception
     
     # Main synchronous workload ...
-
-    x = 1/0 # Simulates a crash
 
 bot.send_file("plot.png", caption="Training loss")
 
 # bot.stop() # Optional: stop the bot gracefully (daemon threads exit automatically)
 ```
 
-## Setup Telegram Bot
-1. Open Telegram and message `@BotFather`.
-2. Use `/newbot` to create a bot and get a token.
-3. To get the Chat ID, send a message to the bot, then visit:
-   `https://api.telegram.org/bot<BOT_TOKEN>/getUpdates`
-   Look for `"chat":{"id":123456789}` in the response.
+## Architecture & Concurrency
 
-## Bonus: Bash / CLI Usage
+`tg-dropin` spawns two lightweight background daemon threads when `start()` is called:
+1. **Poller Thread:** Continuously long-polls the Telegram API for new messages and drops them into a thread-safe queue. It never blocks.
+2. **Worker Thread:** Reads messages from the queue and executes registered `@bot.command` handlers **sequentially**. 
 
-Helper function to send notifications directly from shell scripts:
+> [!NOTE]
+> Because handlers are executed sequentially on a single worker thread, a long-running handler will delay the processing of subsequent commands, but it will *not* block the Poller Thread from fetching new messages.
+
+---
+
+## Bonus: Bash / CLI Usage (Standalone)
+
+For sending notifications directly from bash scripts without using this Python package:
 
 ```bash
 send_telegram_message() {
@@ -75,10 +71,15 @@ send_telegram_message() {
     curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
         -d "chat_id=${CHAT_ID}" \
         --data-urlencode "text=$1" > /dev/null
-    
     echo "📣: $1" # prints the message to the terminal
 }
-
 # Example usage:
 # python train.py && send_telegram_message "Training finished successfully!"
 ```
+
+## Appendix: Setup Telegram Bot
+1. Open Telegram and message `@BotFather`.
+2. Use `/newbot` to create a bot and get a token.
+3. To get the Chat ID, send a message to the bot, then visit:
+   `https://api.telegram.org/bot<BOT_TOKEN>/getUpdates`
+   Look for `"chat":{"id":123456789}` in the response.

@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__init__.__file__ if '__init__' in locals() else __file__), '../src')))
@@ -46,23 +47,24 @@ def test_builtin_help():
 
 def test_return_values_are_sent(monkeypatch):
     bot = TelegramSidecar(bot_token="test", chat_id="123")
-    
+
     sent_messages = []
-    
-    def mock_send_message(message, chat_id=None):
-        sent_messages.append((message, chat_id))
+
+    def mock_send_telegram_text(bot_token, message, targets, parse_mode=None, failure_log_level=logging.ERROR):
+        sent_messages.append((message, targets))
         return True
-        
-    monkeypatch.setattr(bot, "send_message", mock_send_message)
-    
+
+    import tg_dropin
+    monkeypatch.setattr(tg_dropin, "_send_telegram_text", mock_send_telegram_text)
+
     @bot.command("status")
     def handle_status(arg):
         return "All systems go"
-        
+
     bot._process_message("/status", "123")
-    
+
     assert len(sent_messages) == 1
-    assert sent_messages[0] == ("All systems go", "123")
+    assert sent_messages[0] == ("All systems go", ["123"])
 
 def test_chat_id_filtering():
     bot = TelegramSidecar(bot_token="test", chat_id=["123", "456"])
@@ -90,10 +92,11 @@ def test_exception_notification(monkeypatch):
     bot = TelegramSidecar(bot_token="test", chat_id="123")
     
     sent_messages = []
-    def mock_notify(message):
+    def mock_send_message(message, chat_id=None, parse_mode=None):
         sent_messages.append(message)
+        return True
         
-    monkeypatch.setattr(bot, "notify", mock_notify)
+    monkeypatch.setattr(bot, "send_message", mock_send_message)
     
     with pytest.raises(ValueError, match="Test error"):
         with bot.notify_exceptions():
