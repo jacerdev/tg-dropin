@@ -11,7 +11,8 @@ def test_initialization_with_args():
     bot = TelegramSidecar(bot_token="test_token", chat_id="12345")
     assert bot.bot_token == "test_token"
     assert bot.chat_ids == ["12345"]
-    assert "help" in bot.commands # built-in help
+    assert "commands" in bot.commands # built-in commands
+    assert "flush" in bot.commands
     
 def test_initialization_missing_args():
     with pytest.raises(ValueError):
@@ -34,16 +35,16 @@ def test_command_registration_with_description():
     assert bot.commands["ping"]["func"] == handle_ping
     assert bot.commands["ping"]["description"] == "Replies with pong"
 
-def test_builtin_help():
+def test_builtin_commands():
     bot = TelegramSidecar(bot_token="test", chat_id="123")
     
     @bot.command("ping", description="Replies with pong")
     def handle_ping(arg):
         pass
         
-    help_text = bot._builtin_help()
-    assert "/help — Show this help message" in help_text
-    assert "/ping — Replies with pong" in help_text
+    commands_text = bot._builtin_commands()
+    assert "/commands — List available commands" in commands_text
+    assert "/ping — Replies with pong" in commands_text
 
 def test_return_values_are_sent(monkeypatch):
     bot = TelegramSidecar(bot_token="test", chat_id="123")

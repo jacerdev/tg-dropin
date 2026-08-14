@@ -39,8 +39,9 @@ class TelegramSidecar:
         self._handler_queue = queue.Queue()
         self.offset = None
         
-        # Register the built-in help command
-        self.command("help", description="Show this help message")(self._builtin_help)
+        # Register built-in commands
+        self.command("commands", description="List available commands")(self._builtin_commands)
+        self.command("flush", description="Drop pending commands (intercepted immediately)")(lambda _: None)
 
     def __enter__(self):
         self.start()
@@ -81,7 +82,7 @@ class TelegramSidecar:
             return func
         return decorator
 
-    def _builtin_help(self, arg=""):
+    def _builtin_commands(self, arg=""):
         lines = ["Available commands:\n"]
         for cmd, info in self.commands.items():
             desc = info["description"]
@@ -147,7 +148,13 @@ class TelegramSidecar:
                     sender_id = str(message.get("chat", {}).get("id", ""))
 
                     if text and sender_id in self.chat_ids:  # security whitelist
-                        self._handler_queue.put((text, sender_id))
+                        if text.lower().startswith("/flush"):
+                            with self._handler_queue.mutex:
+                                self._handler_queue.queue.clear()
+                            logger.info("Command queue flushed by %s", sender_id)
+                            _send_telegram_text(self.bot_token, "✅ Pending commands flushed.", [sender_id])
+                        else:
+                            self._handler_queue.put((text, sender_id))
             except Exception:
                 logger.warning("Unexpected error in poll loop.", exc_info=True)
 

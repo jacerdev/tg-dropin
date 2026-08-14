@@ -25,7 +25,7 @@ from tg_dropin import TelegramSidecar
 # Initialize bot with credentials
 bot = TelegramSidecar(bot_token="BOT_TOKEN", chat_id=["USER_1_ID", "USER_2_ID"])
 
-# Optional: Register commands with descriptions for the auto-generated /help menu
+# Optional: Register commands with descriptions for the auto-generated /commands menu
 @bot.command("ping", description="Check if the script is still alive")
 def handle_ping(arg):
     return f"pong! Received: ping {arg}" # Handlers that return a string automatically send replies
@@ -56,7 +56,7 @@ bot.send_file("plot.png", caption="Training loss")
 2. **Worker Thread:** Reads messages from the queue and executes registered `@bot.command` handlers **sequentially**. 
 
 > [!NOTE]
-> Because handlers are executed sequentially on a single worker thread, a long-running handler will delay the processing of subsequent commands, but it will *not* block the Poller Thread from fetching new messages.
+> Because handlers are executed sequentially on a single worker thread, a long-running handler delays the processing of subsequent commands. However, the Poller Thread remains unblocked and continues fetching new messages. Implementing true simultaneity at the bot level falls outside the scope of a simple, safe drop-in script. For simultaneous command execution, handlers could for example be designed to spawn separate threads or processes to handle commands and return immediately.
 
 ---
 
